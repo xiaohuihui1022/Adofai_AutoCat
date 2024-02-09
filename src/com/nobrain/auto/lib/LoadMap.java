@@ -84,31 +84,27 @@ public class LoadMap {
 
              PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
 
-             switch(Key.getKey((int)(tempBPM*1000))) {
-                 case Key.KEY8:
-                     if(i>=key8.length) i=0;
+             switch (Key.getKey((int) (tempBPM * 1000))) {
+                 case Key.KEY8 -> {
+                     if (i >= key8.length) i = 0;
                      pressInfo.key = convert(key8[i]);
-                     break;
-
-                 case Key.KEY6:
-                     if(i>=key6.length) i=0;
+                 }
+                 case Key.KEY6 -> {
+                     if (i >= key6.length) i = 0;
                      pressInfo.key = convert(key6[i]);
-                     break;
-
-                 case Key.KEY4:
-                     if(i>=key4.length) i=0;
+                 }
+                 case Key.KEY4 -> {
+                     if (i >= key4.length) i = 0;
                      pressInfo.key = convert(key4[i]);
-                     break;
-
-                 case Key.KEY2:
-                     if(i>=key2.length) i=0;
+                 }
+                 case Key.KEY2 -> {
+                     if (i >= key2.length) i = 0;
                      pressInfo.key = convert(key2[i]);
-                     break;
-
-                 case Key.KEY1:
-                     if(i!=0) i=0;
+                 }
+                 case Key.KEY1 -> {
+                     if (i != 0) i = 0;
                      pressInfo.key = convert(key2[i]);
-                     break;
+                 }
              }
 
              i++;
@@ -157,14 +153,14 @@ public class LoadMap {
     private String read(String path) {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path)), StandardCharsets.UTF_8));
-            String result = "";
+            StringBuilder result = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 if(line.contains("floor")&&!line.contains("SetSpeed")&&!line.contains("Twirl")) continue;
 
-                result += line + "\n";
+                result.append(line).append("\n");
             }
-            return result;
+            return result.toString();
         } catch (IOException e) {
             return "";
         }

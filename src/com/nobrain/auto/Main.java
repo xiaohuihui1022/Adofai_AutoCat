@@ -15,6 +15,7 @@ import org.jnativehook.NativeHookException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -23,23 +24,24 @@ import java.util.logging.Logger;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("main.fxml")));
 
             primaryStage.setTitle("Auto Cat");
             Scene scene = new Scene(root, 270, 100);
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
-            primaryStage.getIcons().addAll(new Image(Main.class.getResourceAsStream("resources/icon.png")));
+            primaryStage.getIcons().addAll(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("resources/icon.png"))));
 
             LogManager.getLogManager().reset();
             Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
             logger.setLevel(Level.OFF);
 
-            GlobalScreen.registerNativeHawkeye();
-            GlobalScreen.addNativeKeyListener(new KeyDetector());
+            GlobalScreen.registerNativeHook();
 
+//            GlobalScreen.addNativeKeyListener(new KeyDetector());
+            GlobalScreen.addNativeKeyListener(new KeyDetect());
             primaryStage.setOnCloseRequest(we -> {
                 try {
                     GlobalScreen.unregisterNativeHook();
@@ -51,7 +53,7 @@ public class Main extends Application {
             primaryStage.show();
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("에러");
+            alert.setTitle("错误");
             alert.setHeaderText("");
             alert.setContentText(getPrintStackTrace(e));
             alert.show();

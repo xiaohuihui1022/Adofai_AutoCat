@@ -55,35 +55,35 @@ public class Controller implements Initializable {
             adofai = new Adofai(null, lag, name, on, workshop);
         } else {
             name.setText("");
-            label.setText("파일 선택되지 않음");
+            label.setText("未选择文件");
             adofai = null;
         }
     }
 
     @FXML public void onButtonClick(){
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("얼불춤 파일", "*.adofai","*.ADOFAI"));
-        fileChooser.setTitle("파일 선택");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("冰与火谱面文件", "*.adofai","*.ADOFAI"));
+        fileChooser.setTitle("选择文件");
         if(defaultPath!=null) {
             fileChooser.setInitialDirectory(new File(defaultPath));
         }
         File file = fileChooser.showOpenDialog(primaryStage);
 
         if(file!=null) {
-            label.setText("파일 선택됨 - " + file.getName());
+            label.setText("已选择文件 - " + file.getName());
             defaultPath = file.getAbsolutePath().replace(file.getName(),"");
 
             try {
                 adofai = new Adofai(file.getAbsolutePath(), lag, name, on, workshop);
             } catch (ParseException e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("오류");
+                alert.setTitle("错误");
                 System.out.println(e.toString());
                 alert.setHeaderText(e.toString());
-                alert.setContentText("맵을 분석할 수가 없습니다.");
+                alert.setContentText("无法解析谱面");
                 alert.showAndWait();
                 adofai = null;
-                label.setText("파싱 오류 - " + file.getName());
+                label.setText("解析错误 - " + file.getName());
             }
         }
     }
@@ -99,13 +99,13 @@ public class Controller implements Initializable {
                     adofai = new Adofai(null, lag, name, on, workshop);
                 } catch (ParseException e) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("오류");
+                    alert.setTitle("错误");
                     System.out.println(e.toString());
                     alert.setHeaderText(e.toString());
-                    alert.setContentText("맵을 분석할 수가 없습니다.");
+                    alert.setContentText("无法解析谱面");
                     alert.showAndWait();
                     adofai = null;
-                    label.setText("파싱 오류");
+                    label.setText("解析错误");
                 }
             }
         });

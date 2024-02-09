@@ -1,6 +1,5 @@
 package com.nobrain.auto.lib;
 
-import com.nobrain.auto.clasz.Key;
 import com.nobrain.auto.clasz.PressInfo;
 import com.nobrain.auto.manager.KeyDetect;
 import javafx.scene.control.CheckBox;
@@ -8,27 +7,24 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.json.simple.parser.ParseException;
 
-import java.util.*;
 import java.awt.*;
-import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Adofai {
     public boolean isCancel = false;
     public static Thread thread;
-    private List<PressInfo> delayList;
-    private CheckBox workshop;
-    private TextField lag;
-    private TextField name;
-    private Label isOn;
+    private final List<PressInfo> delayList;
+    private final TextField lag;
+    private final Label isOn;
     private long original = 0 ;
 
 
     public Adofai(String path,TextField lag,TextField name, Label isOn,CheckBox workshop) throws ParseException {
         isCancel = false;
         this.lag = lag;
-        this.name = name;
-        this.workshop = workshop;
         this.isOn = isOn;
 
         if (!workshop.isSelected() && path != null) {
@@ -73,7 +69,7 @@ public class Adofai {
             if (!Double.isNaN(num)) {
                 lagDelay = num;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         if(isFirst)
@@ -127,7 +123,7 @@ public class Adofai {
                                 }
                             };
                         timer.schedule(timerTask, delay);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
 
 

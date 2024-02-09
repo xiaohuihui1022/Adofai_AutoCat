@@ -9,9 +9,9 @@ public class Key {
 
     public static int getKey(int n) {
         if(n<=17) return KEY8;
-        if(n<=32&&n>=18) return KEY6;
-        if(n<=69&&n>=33) return KEY4;
-        if(n<=166&&n>=70) return KEY2;
+        else if(n<=32) return KEY6;
+        else if(n<=69) return KEY4;
+        else if(n<=166) return KEY2;
         return KEY1;
     }
 

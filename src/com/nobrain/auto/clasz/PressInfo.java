@@ -13,7 +13,4 @@ public class PressInfo {
         this.delay = delay;
     }
 
-    public PressInfo(){
-
-    }
 }
