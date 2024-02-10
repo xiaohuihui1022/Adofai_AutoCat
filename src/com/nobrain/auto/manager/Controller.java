@@ -93,7 +93,7 @@ public class Controller implements Initializable {
         name.setOnKeyPressed(event -> {
             if(event.getCode().getName().equals("Enter")) {
                 if(name.getText()==null) return;
-                if(name.getText().trim().length()<1) return;
+                if(name.getText().trim().isEmpty()) return;
 
                 try {
                     adofai = new Adofai(null, lag, name, on, workshop);

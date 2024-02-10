@@ -15,13 +15,26 @@ import java.util.HashMap;
 public class LoadMap {
     public ArrayList<PressInfo> delays = new ArrayList<>();
 
-    public LoadMap(String path) throws ParseException {
+    private String[] pathData;
 
+    private String[] angleData;
+
+    public LoadMap(String path) throws ParseException {
          JSONParser parser = new JSONParser();
          JSONObject map = (JSONObject) parser.parse(read(path).replaceAll("\uFEFF", ""));
          JSONObject setting = (JSONObject) map.get("settings");
          JSONArray actions = (JSONArray) map.get("actions");
-         String[] pathData = map.get("pathData").toString().split("");
+         if (map.containsKey("pathData")){
+             pathData = map.get("pathData").toString().split("");
+         }
+         else if (map.containsKey("angleData")){
+             angleData = map.get("angleData")
+                     .toString()
+                     .replace("[", "")
+                     .replace("]", "")
+                     .split(",");
+         }
+
          HashMap<Integer, Double> changeBPM = new HashMap<>();
          HashMap<Integer, Boolean> changeTwirl = new HashMap<>();
 
@@ -64,54 +77,105 @@ public class LoadMap {
 
          currentBPM = toDouble(setting.get("bpm"))*pitch;
          int i = 0;
-         for (int n = 0; n < pathData.length; n++) {
-             String now = pathData[n];
 
-             String next = getValue(pathData,n+1);
-             boolean isMidspin = next.equals("!");
+         // 如果原谱是pathdata
+         if (pathData != null){
+             for (int n = 0; n < pathData.length; n++) {
+                 String now = pathData[n];
 
-             if(now.equals("!")) continue;
-             if(isMidspin) {
-                 n++;
-                 next = getValue(pathData,n+1);
+                 String next = getValue(pathData,n+1);
+                 boolean isMidspin = next.equals("!");
+
+                 if(now.equals("!")) continue;
+                 if(isMidspin) {
+                     n++;
+                     next = getValue(pathData,n+1);
+                 }
+
+                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+
+                 int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
+                 double tempBPM = ((double)angle/180)*(60/(currentBPM*pitch));
+
+                 PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
+
+                 switch (Key.getKey((int) (tempBPM * 1000))) {
+                     case Key.KEY8 -> {
+                         if (i >= key8.length) i = 0;
+                         pressInfo.key = convert(key8[i]);
+                     }
+                     case Key.KEY6 -> {
+                         if (i >= key6.length) i = 0;
+                         pressInfo.key = convert(key6[i]);
+                     }
+                     case Key.KEY4 -> {
+                         if (i >= key4.length) i = 0;
+                         pressInfo.key = convert(key4[i]);
+                     }
+                     case Key.KEY2 -> {
+                         if (i >= key2.length) i = 0;
+                         pressInfo.key = convert(key2[i]);
+                     }
+                     case Key.KEY1 -> {
+                         if (i != 0) i = 0;
+                         pressInfo.key = convert(key2[i]);
+                     }
+                 }
+                 i++;
+                 delays.add(pressInfo);
              }
-
-             if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-             if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
-
-             int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
-             double tempBPM = ((double)angle/180)*(60/(currentBPM*pitch));
-
-             PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
-
-             switch (Key.getKey((int) (tempBPM * 1000))) {
-                 case Key.KEY8 -> {
-                     if (i >= key8.length) i = 0;
-                     pressInfo.key = convert(key8[i]);
-                 }
-                 case Key.KEY6 -> {
-                     if (i >= key6.length) i = 0;
-                     pressInfo.key = convert(key6[i]);
-                 }
-                 case Key.KEY4 -> {
-                     if (i >= key4.length) i = 0;
-                     pressInfo.key = convert(key4[i]);
-                 }
-                 case Key.KEY2 -> {
-                     if (i >= key2.length) i = 0;
-                     pressInfo.key = convert(key2[i]);
-                 }
-                 case Key.KEY1 -> {
-                     if (i != 0) i = 0;
-                     pressInfo.key = convert(key2[i]);
-                 }
-             }
-
-             i++;
-             delays.add(pressInfo);
 
          }
+         // 如果原谱子是angleData
+         else if (angleData != null){
+             for (int n = 0; n < angleData.length; n++) {
+                 int now = strToInt(angleData[n]);
 
+                 int next = strToInt(getValue(angleData,n + 1));
+                 boolean isMidspin = next == 999;
+
+                 if(now == 999) continue;
+                 if(isMidspin) {
+                     n++;
+                     next = strToInt(getValue(angleData,n + 1));
+                 }
+
+                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+
+                 int angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
+                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM*pitch));
+
+                 PressInfo pressInfo = new PressInfo((long)(tempBPM * 1000000000));
+
+                 switch (Key.getKey((int) (tempBPM * 1000))) {
+                     case Key.KEY8 -> {
+                         if (i >= key8.length) i = 0;
+                         pressInfo.key = convert(key8[i]);
+                     }
+                     case Key.KEY6 -> {
+                         if (i >= key6.length) i = 0;
+                         pressInfo.key = convert(key6[i]);
+                     }
+                     case Key.KEY4 -> {
+                         if (i >= key4.length) i = 0;
+                         pressInfo.key = convert(key4[i]);
+                     }
+                     case Key.KEY2 -> {
+                         if (i >= key2.length) i = 0;
+                         pressInfo.key = convert(key2[i]);
+                     }
+                     case Key.KEY1 -> {
+                         if (i != 0) i = 0;
+                         pressInfo.key = convert(key2[i]);
+                     }
+                 }
+
+                 i++;
+                 delays.add(pressInfo);
+             }
+         }
     }
 
     private String getValue(String[] array, int index) {
@@ -164,5 +228,18 @@ public class LoadMap {
         } catch (IOException e) {
             return "";
         }
+    }
+
+    // 将string转为int
+    private int strToInt(String str) {
+        int result;
+        try {
+            result = Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            double temp = Double.parseDouble(str);
+            result = (int) temp;
+        }
+        return result;
+
     }
 }

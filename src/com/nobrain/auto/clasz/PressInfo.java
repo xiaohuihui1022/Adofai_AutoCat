@@ -2,7 +2,7 @@ package com.nobrain.auto.clasz;
 
 public class PressInfo {
     public int key = 74;
-    public long delay = 0;
+    public long delay;
 
     public PressInfo(long delay, int key){
         this.delay = delay;

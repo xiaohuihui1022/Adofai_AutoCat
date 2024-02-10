@@ -52,11 +52,7 @@ public class Main extends Application {
             });
             primaryStage.show();
         } catch (Exception e){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("错误");
-            alert.setHeaderText("");
-            alert.setContentText(getPrintStackTrace(e));
-            alert.show();
+            e.printStackTrace();
         }
 
 
