@@ -20,7 +20,7 @@ public class AngleUtill {
         if (code.equals("o")) return Angle.S2RightUp;
         if (code.equals("T")) return Angle.T1RightUp;
         if (code.equals("J")) return Angle.T2RightUp;
-        if (code.equals("M")) return Angle.T1RightDown; // 210 - 330 - 540
+        if (code.equals("M")) return Angle.T1RightDown;
         if (code.equals("B")) return Angle.T2RightDown;
         if (code.equals("A")) return Angle.S1RightDown;
         if (code.equals("Y")) return Angle.S2RightDown;
@@ -47,7 +47,6 @@ public class AngleUtill {
     // pathData用
     public static int getCurrentAngle(String thisTile, String nextTile, Boolean isTwirl, Boolean isMidspin) {
         int angle = (toAngle(nextTile)-toAngle(thisTile));
-        System.out.println(angle);
         angle += (isMidspin)? 360:540;
         angle %= 360;
         if(isTwirl) angle = 360-angle;

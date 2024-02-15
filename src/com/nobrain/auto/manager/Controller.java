@@ -22,8 +22,6 @@ public class Controller implements Initializable {
 
 
     @FXML
-    private CheckBox workshop;
-    @FXML
     private Label label;
     @FXML
     private Button button;
@@ -35,30 +33,6 @@ public class Controller implements Initializable {
     private TextField name;
     @FXML
     private Label on;
-
-
-    @FXML public void onApply() throws IOException, ParseException {
-        adofai = new Adofai(null, lag, name, on, workshop);
-    }
-
-    @FXML public void onDragClick() throws IOException, ParseException {
-        boolean isSelect = workshop.isSelected();
-
-        name.setVisible(isSelect);
-        label.setVisible(!isSelect);
-        button.setVisible(!isSelect);
-        any.setVisible(isSelect);
-
-        if(isSelect) {
-            if(name.getText()==null) return;
-            if(name.getText().trim().length()<1) return;
-            adofai = new Adofai(null, lag, name, on, workshop);
-        } else {
-            name.setText("");
-            label.setText("未选择文件");
-            adofai = null;
-        }
-    }
 
     @FXML public void onButtonClick(){
         FileChooser fileChooser = new FileChooser();
@@ -74,11 +48,11 @@ public class Controller implements Initializable {
             defaultPath = file.getAbsolutePath().replace(file.getName(),"");
 
             try {
-                adofai = new Adofai(file.getAbsolutePath(), lag, name, on, workshop);
+                adofai = new Adofai(file.getAbsolutePath(), lag, on);
             } catch (ParseException e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("错误");
-                System.out.println(e.toString());
+                e.printStackTrace();
                 alert.setHeaderText(e.toString());
                 alert.setContentText("无法解析谱面");
                 alert.showAndWait();
@@ -90,25 +64,7 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
-        name.setOnKeyPressed(event -> {
-            if(event.getCode().getName().equals("Enter")) {
-                if(name.getText()==null) return;
-                if(name.getText().trim().isEmpty()) return;
-
-                try {
-                    adofai = new Adofai(null, lag, name, on, workshop);
-                } catch (ParseException e) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("错误");
-                    System.out.println(e.toString());
-                    alert.setHeaderText(e.toString());
-                    alert.setContentText("无法解析谱面");
-                    alert.showAndWait();
-                    adofai = null;
-                    label.setText("解析错误");
-                }
-            }
-        });
+        label.setText("未选择文件");
     }
 
 }

@@ -2,38 +2,29 @@ package com.nobrain.auto.lib;
 
 import com.nobrain.auto.clasz.PressInfo;
 import com.nobrain.auto.manager.KeyDetect;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.json.simple.parser.ParseException;
 
+import java.util.*;
 import java.awt.*;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Adofai {
     public boolean isCancel = false;
     public static Thread thread;
-    private final List<PressInfo> delayList;
-    private final TextField lag;
-    private final Label isOn;
+    private List<PressInfo> delayList;
+    private TextField lag;
+    private Label isOn;
     private long original = 0 ;
 
 
-    public Adofai(String path,TextField lag,TextField name, Label isOn,CheckBox workshop) throws ParseException {
+    public Adofai(String path,TextField lag, Label isOn) throws ParseException {
         isCancel = false;
         this.lag = lag;
         this.isOn = isOn;
+        delayList = new LoadMap(path).delays;
 
-        if (!workshop.isSelected() && path != null) {
-            delayList = new LoadMap(path).delays;
-        } else {
-            SearchMap.DistanceClass map = new SearchMap(name.getText()).result;
-            delayList = new LoadMap(map.path.getAbsolutePath()).delays;
-            name.setText(map.title);
-        }
     }
 
     public void cancel(){
@@ -69,37 +60,63 @@ public class Adofai {
             if (!Double.isNaN(num)) {
                 lagDelay = num;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
         }
 
         if(isFirst)
-            lagDelay -= 120;
+            lagDelay-=120;
 
         PressInfo pressInfo = new PressInfo(originalNum+(long)lagDelay*1000000);
 
+
         delays.set(0,pressInfo);
         thread = new Thread(() -> {
-            Iterator<PressInfo> pressIntegrator = delays.iterator();
+            Iterator<PressInfo> pressInterator = delays.iterator();
+
             long nowTime, prevTime = System.nanoTime();
-            PressInfo press = pressIntegrator.next();
+            int prev = 0, now, delay = 55;
+
+            PressInfo press = pressInterator.next();
 
             while (true) {
                 if(isCancel) break;
                 nowTime = System.nanoTime();
                 if (nowTime - prevTime >= press.delay) {
                     prevTime += press.delay;
-                    if (pressIntegrator.hasNext()) {
-                        press = pressIntegrator.next();
+                    delay = 55;
+
+                    if (pressInterator.hasNext()) {
+                        press = pressInterator.next();
                     } else {
                         isOn.setVisible(false);
                         break;
                     }
 
                     PressInfo finalPress = press;
+                    now = (int)(finalPress.delay/1000000);
 
                     robot.keyPress(finalPress.key);
-                    robot.keyRelease(finalPress.key);
 
+                    if(now<55&&prev<55) {
+                        delay = now-5;
+                        if(delay<0) delay = 0;
+                    }
+
+                    try {
+                        Timer timer = new Timer();
+                        TimerTask timerTask = new TimerTask() {
+                            @Override
+                            public void run() { robot.keyRelease(finalPress.key);
+                                timer.cancel();
+                                timer.purge();
+                            }
+                        };
+                        timer.schedule(timerTask, delay);
+                    } catch (Exception ignored) {
+                    }
+
+
+                    prev = (int)(finalPress.delay/1000000);
                 }
             }
             thread.interrupt();

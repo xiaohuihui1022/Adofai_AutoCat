@@ -20,13 +20,19 @@ public class LoadMap {
     private String[] angleData;
 
     public LoadMap(String path) throws ParseException {
+         // 设置json
          JSONParser parser = new JSONParser();
+         // 读取json
          JSONObject map = (JSONObject) parser.parse(read(path).replaceAll("\uFEFF", ""));
+         // 读取settings
          JSONObject setting = (JSONObject) map.get("settings");
+         // 读取actions
          JSONArray actions = (JSONArray) map.get("actions");
+         // 如果是pathData
          if (map.containsKey("pathData")){
              pathData = map.get("pathData").toString().split("");
          }
+         // 如果是angleData
          else if (map.containsKey("angleData")){
              angleData = map.get("angleData")
                      .toString()
@@ -35,46 +41,61 @@ public class LoadMap {
                      .split(",");
          }
 
+         // 建立两个表，用来标注BPM和旋转变化。
          HashMap<Integer, Double> changeBPM = new HashMap<>();
          HashMap<Integer, Boolean> changeTwirl = new HashMap<>();
 
+         // 获取谱面初始BPM
          double currentBPM = toDouble(setting.get("bpm"));
+         // 初始旋转为false
          boolean isTwirl = false;
 
+         // 定义keys
          String[] key2 ="jf".split("");
          String[] key4 ="jkfd".split("");
          String[] key6 ="jkfdsl".split("");
          String[] key8 ="jkfdsla;".split("");
 
+         // 计算音高（倍速）
          double pitch = toDouble(setting.get("pitch"))/100;
+         // 读取谱面延时
          double tick = toDouble(setting.get("countdownTicks"));
+         // 计算延时
          double loadDelay = ((0.5 + ((0.45*tick)/((currentBPM*pitch)/100)))*1000);
          int offset = toInt(setting.get("offset"));
          double result = ((60000/(currentBPM*pitch)+offset+loadDelay)*1000000);
 
+         // 添加进数组
          delays.add(new PressInfo((long)result));
 
+         // 循环读取谱面
          for(Object o : actions) {
              JSONObject action = (JSONObject)o;
+             // 如果查到兔子/乌龟
              if(action.get("eventType").equals("SetSpeed")) {
-                 if(action.get("speedType")==null) {
+                 // Avoid NPE
+                 if(action.get("speedType") == null) {
                      currentBPM = toDouble(action.get("beatsPerMinute"));
                      changeBPM.put(toInt(action.get("floor"))-1, currentBPM);
                      continue;
                  }
+                 // 如果是直接修改BPM
                  if(action.get("speedType").equals("Bpm")) {
                      currentBPM = toDouble(action.get("beatsPerMinute"));
                      changeBPM.put(toInt(action.get("floor"))-1, currentBPM);
+                 // 如果是BPM倍频器
                  } else {
                      changeBPM.put(toInt(action.get("floor"))-1, currentBPM*toDouble(action.get("bpmMultiplier")));
                      currentBPM = currentBPM*toDouble(action.get("bpmMultiplier"));
                  }
              }
+             // 如果有旋转
              if(action.get("eventType").equals("Twirl")) {
                  changeTwirl.put(toInt(action.get("floor"))-1,true);
              }
          }
 
+         // 计算BPM
          currentBPM = toDouble(setting.get("bpm"))*pitch;
          int i = 0;
 
@@ -84,6 +105,7 @@ public class LoadMap {
                  String now = pathData[n];
 
                  String next = getValue(pathData,n+1);
+                 // 中旋
                  boolean isMidspin = next.equals("!");
 
                  if(now.equals("!")) continue;

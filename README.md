@@ -1,6 +1,12 @@
 # Adofai AutoCat
 # 注意：
-## 本仓库为我自己汉化改版（兼容AngleData），原作者已经将仓库Archive。
+## 本仓库为我自己汉化改版（兼容AngleData），原仓库已被Archived。
+
+## Todo List:
+- [x] 支持识别angleData
+- [ ] 支持DLC内容
+- [ ] 手法模拟
+- [ ] 自动校准
 
 # 以下是原作者的README
 
