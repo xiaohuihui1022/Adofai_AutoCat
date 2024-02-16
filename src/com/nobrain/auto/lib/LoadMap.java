@@ -98,29 +98,27 @@ public class LoadMap {
          // 计算BPM
          currentBPM = toDouble(setting.get("bpm"))*pitch;
          int i = 0;
-
          // 如果原谱是pathdata
          if (pathData != null){
              for (int n = 0; n < pathData.length; n++) {
                  String now = pathData[n];
-
                  String next = getValue(pathData,n+1);
+                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
                  // 中旋
                  boolean isMidspin = next.equals("!");
-
                  if(now.equals("!")) continue;
                  if(isMidspin) {
                      n++;
                      next = getValue(pathData,n+1);
                  }
 
-                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
                  int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
                  double tempBPM = ((double)angle/180)*(60/(currentBPM*pitch));
 
                  PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
+
 
                  switch (Key.getKey((int) (tempBPM * 1000))) {
                      case Key.KEY8 -> {
@@ -157,14 +155,15 @@ public class LoadMap {
                  int next = strToInt(getValue(angleData,n + 1));
                  boolean isMidspin = next == 999;
 
+                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+
                  if(now == 999) continue;
                  if(isMidspin) {
                      n++;
                      next = strToInt(getValue(angleData,n + 1));
                  }
 
-                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
                  int angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
                  double tempBPM = ((double)angle / 180) * (60 / (currentBPM*pitch));

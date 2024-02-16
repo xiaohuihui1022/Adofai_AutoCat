@@ -75,7 +75,6 @@ public class Adofai {
 
             long nowTime, prevTime = System.nanoTime();
             int prev = 0, now, delay = 55;
-
             PressInfo press = pressInterator.next();
 
             while (true) {
