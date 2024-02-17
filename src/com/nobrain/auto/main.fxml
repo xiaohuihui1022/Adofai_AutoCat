@@ -11,7 +11,7 @@
          <children>
             <Button fx:id="button" layoutX="26.0" layoutY="25.0" mnemonicParsing="false" onMouseClicked="#onButtonClick" text="打开文件" />
             <Label fx:id="label" layoutX="105.0" layoutY="27.0" text="未选择文件" />
-            <TextField fx:id="lag" layoutX="26.0" layoutY="56.0" prefHeight="25.0" prefWidth="61.0" promptText="延迟" />
+            <Label fx:id="lag" layoutX="20.0" layoutY="66.0" text="请在谱子的第一个floor按下insert以启用该宏" />
             <Label fx:id="on" layoutX="173.0" layoutY="60.0" text="运行中!!" textFill="RED" visible="false">
                <effect>
                   <Bloom threshold="1.0" />

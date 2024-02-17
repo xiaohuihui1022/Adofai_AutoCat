@@ -10,18 +10,18 @@ import java.util.*;
 import java.awt.*;
 import java.util.List;
 
+import static com.nobrain.auto.Main.isFirst;
+import static com.nobrain.auto.Main.isSecond;
+
 public class Adofai {
     public boolean isCancel = false;
     public static Thread thread;
     private List<PressInfo> delayList;
-    private TextField lag;
     private Label isOn;
-    private long original = 0 ;
 
 
-    public Adofai(String path,TextField lag, Label isOn) throws ParseException {
+    public Adofai(String path, Label isOn) throws ParseException {
         isCancel = false;
-        this.lag = lag;
         this.isOn = isOn;
         delayList = new LoadMap(path).delays;
 
@@ -34,53 +34,34 @@ public class Adofai {
         if(thread!=null) if (!thread.isInterrupted()) thread.interrupt();
     }
 
-    public void start(Boolean isFirst) throws AWTException {
+    public void start() throws AWTException {
         isCancel = false;
         isOn.setVisible(true);
-
         final Robot robot = new Robot();
-        robot.keyPress('P');
-        robot.keyRelease('P');
 
-        if(original!=0) {
-            PressInfo pressInfo = new PressInfo(original);
-            delayList.set(0,pressInfo);
-        }
-
-        if(thread!=null) if(!thread.isInterrupted()) thread.interrupt();
-
-        List<PressInfo> delays = delayList;
-        long originalNum = delays.get(0).delay;
-        if(original==0) original = originalNum;
-        String text = lag.getText();
-        double lagDelay = 0;
-
-        try {
-            double num = Double.parseDouble(text);
-            if (!Double.isNaN(num)) {
-                lagDelay = num;
-            }
-        } catch (Exception e) {
-        }
-
-        if(isFirst)
-            lagDelay-=120;
-
-        PressInfo pressInfo = new PressInfo(originalNum+(long)lagDelay*1000000);
-
-
-        delays.set(0,pressInfo);
         thread = new Thread(() -> {
-            Iterator<PressInfo> pressInterator = delays.iterator();
+            Iterator<PressInfo> pressInterator = delayList.iterator();
 
             long nowTime, prevTime = System.nanoTime();
             int prev = 0, now, delay = 55;
             PressInfo press = pressInterator.next();
 
+            if (isFirst){
+                press.delay -= 150000000;
+                isFirst = false;
+                isSecond = true;
+            }
+            else if (isSecond) {
+                press.delay += 150000000;
+                isSecond = false;
+            }
+
+
             while (true) {
                 if(isCancel) break;
                 nowTime = System.nanoTime();
                 if (nowTime - prevTime >= press.delay) {
+
                     prevTime += press.delay;
                     delay = 55;
 

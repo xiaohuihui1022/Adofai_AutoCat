@@ -23,6 +23,9 @@ import java.util.logging.Logger;
 
 public class Main extends Application {
 
+    public static boolean isFirst = true;
+    public static boolean isSecond = false;
+
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -40,7 +43,6 @@ public class Main extends Application {
 
             GlobalScreen.registerNativeHook();
 
-//            GlobalScreen.addNativeKeyListener(new KeyDetector());
             GlobalScreen.addNativeKeyListener(new KeyDetect());
             primaryStage.setOnCloseRequest(we -> {
                 try {

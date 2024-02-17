@@ -28,8 +28,6 @@ public class Controller implements Initializable {
     @FXML
     private Button any;
     @FXML
-    private TextField lag;
-    @FXML
     private TextField name;
     @FXML
     private Label on;
@@ -48,7 +46,7 @@ public class Controller implements Initializable {
             defaultPath = file.getAbsolutePath().replace(file.getName(),"");
 
             try {
-                adofai = new Adofai(file.getAbsolutePath(), lag, on);
+                adofai = new Adofai(file.getAbsolutePath(), on);
             } catch (ParseException e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("错误");

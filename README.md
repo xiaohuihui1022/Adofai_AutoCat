@@ -1,4 +1,5 @@
 # Adofai AutoCat
+# 现在本软件无需手动设置延迟，只需要在第一格砖块时按下insert，即可自动打谱
 # 注意：
 ## 本仓库为我自己汉化改版（兼容AngleData），原仓库已被Archived。
 

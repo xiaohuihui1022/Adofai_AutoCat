@@ -6,9 +6,10 @@ import org.jnativehook.keyboard.NativeKeyListener;
 import java.awt.*;
 
 
+
 public class KeyDetect implements NativeKeyListener {
     public static boolean canCancel = false;
-    public boolean isFirst = true;
+
 
     public void nativeKeyPressed(NativeKeyEvent e) {
         String key = NativeKeyEvent.getKeyText(e.getKeyCode());
@@ -20,8 +21,7 @@ public class KeyDetect implements NativeKeyListener {
                     Controller.adofai.cancel();
                     canCancel = false;
                 } else {
-                    Controller.adofai.start(isFirst);
-                    if(isFirst) isFirst = false;
+                    Controller.adofai.start();
                     canCancel = true;
                 }
             } catch (AWTException awtException) {
