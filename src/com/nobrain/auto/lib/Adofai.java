@@ -61,8 +61,8 @@ public class Adofai {
                 if(isCancel) break;
                 nowTime = System.nanoTime();
                 if (nowTime - prevTime >= press.delay) {
-
                     prevTime += press.delay;
+                    // 按键松开的延迟，所以可以设置一个默认值
                     delay = 55;
 
                     if (pressInterator.hasNext()) {
@@ -82,11 +82,15 @@ public class Adofai {
                         if(delay<0) delay = 0;
                     }
 
+
+                    // 计算按键松开的延迟
+
                     try {
                         Timer timer = new Timer();
                         TimerTask timerTask = new TimerTask() {
                             @Override
-                            public void run() { robot.keyRelease(finalPress.key);
+                            public void run() {
+                                robot.keyRelease(finalPress.key);
                                 timer.cancel();
                                 timer.purge();
                             }

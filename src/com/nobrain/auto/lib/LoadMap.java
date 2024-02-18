@@ -11,6 +11,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class LoadMap {
     public ArrayList<PressInfo> delays = new ArrayList<>();
@@ -23,7 +24,7 @@ public class LoadMap {
         // 设置json
         JSONParser parser = new JSONParser();
         // 读取json
-        JSONObject map = (JSONObject) parser.parse(read(path).replaceAll("\uFEFF", ""));
+        JSONObject map = (JSONObject) parser.parse(fixJsonString(read(path)));
         // 读取settings
         JSONObject setting = (JSONObject) map.get("settings");
         // 读取actions
@@ -44,6 +45,8 @@ public class LoadMap {
         // 建立两个表，用来标注BPM和旋转变化。
         HashMap<Integer, Double> changeBPM = new HashMap<>();
         HashMap<Integer, Boolean> changeTwirl = new HashMap<>();
+        // 新增：暂停砖块
+        HashMap<Integer, Double> pause = new HashMap<>();
 
         // 获取谱面初始BPM
         double currentBPM = toDouble(setting.get("bpm"));
@@ -52,21 +55,12 @@ public class LoadMap {
 
         // 定义keys
         String[] key2 ="jf".split("");
-        String[] key4 ="jkfd".split("");
-        String[] key6 ="jkfdsl".split("");
-        String[] key8 ="jkfdsla;".split("");
+        String[] key4 ="jfkd".split("");
+        String[] key6 ="jfkdls".split("");
+        String[] key8 ="jfkdls;a".split("");
 
         // 计算音高（倍速）
-        double pitch = toDouble(setting.get("pitch"))/100;
-//        // 读取谱面延时
-//        double tick = toDouble(setting.get("countdownTicks"));
-//        // 计算延时
-//        double loadDelay = ((0.5 + ((0.45*tick)/((currentBPM*pitch)/100)))*1000);
-//        int offset = toInt(setting.get("offset"));
-//        double result = ((60000/(currentBPM*pitch)+offset+loadDelay)*1000000);
-
-        // 添加进数组
-        // delays.add(new PressInfo((long)result));
+        double pitch = toDouble(setting.get("pitch")) / 100;
 
         // 循环读取谱面
         for(Object o : actions) {
@@ -93,10 +87,14 @@ public class LoadMap {
             if(action.get("eventType").equals("Twirl")) {
                 changeTwirl.put(toInt(action.get("floor"))-1,true);
             }
+            // 如果是暂停砖块
+            if (action.get("eventType").equals("Pause")){
+                pause.put(toInt(action.get("floor")) - 1, toDouble(action.get("duration")));
+            }
         }
 
         // 计算BPM
-        currentBPM = toDouble(setting.get("bpm"))*pitch;
+        currentBPM = toDouble(setting.get("bpm")) * pitch;
         int i = 0;
         // 如果原谱是pathdata
         if (pathData != null){
@@ -107,16 +105,19 @@ public class LoadMap {
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
                 // 中旋
                 boolean isMidspin = next.equals("!");
-                if(now.equals("!")) continue;
+                // 由于暂停砖块放置在中旋上没有用，所以不考虑那种情况
+                if (now.equals("!")) continue;
+
                 if(isMidspin) {
                     n++;
                     next = getValue(pathData,n+1);
                 }
 
-
                 int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
-                double tempBPM = ((double)angle/180)*(60/(currentBPM*pitch));
+                if(pause.get(n)!=null) angle += (int) (180 * pause.get(n));
 
+                double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
+                
                 PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
 
 
@@ -158,7 +159,9 @@ public class LoadMap {
                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
-                if(now == 999) continue;
+
+                if (now == 999) continue;
+
                 if(isMidspin) {
                     n++;
                     next = strToInt(getValue(angleData,n + 1));
@@ -166,6 +169,9 @@ public class LoadMap {
 
 
                 int angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
+                if(pause.get(n)!=null) angle += (int) (180 * pause.get(n));
+
+
                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM*pitch));
 
                 PressInfo pressInfo = new PressInfo((long)(tempBPM * 1000000000));
@@ -206,8 +212,9 @@ public class LoadMap {
 
     private int toInt(Object o) {
         try {
-            return Integer.parseInt(String.valueOf(o));
+            return Integer.parseInt(String.valueOf(o).trim());
         } catch (Exception e) {
+            e.printStackTrace();
             return -1;
         }
     }
@@ -241,7 +248,12 @@ public class LoadMap {
             StringBuilder result = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                if(line.contains("floor")&&!line.contains("SetSpeed")&&!line.contains("Twirl")) continue;
+                if(
+                        line.contains("floor")
+                        && !line.contains("SetSpeed")
+                        && !line.contains("Twirl")
+                        && !line.contains("Pause")
+                ) continue;
 
                 result.append(line).append("\n");
             }
@@ -262,5 +274,91 @@ public class LoadMap {
         }
         return result;
 
+    }
+
+
+    public static String fixJsonString(String jsonStr) {
+        jsonStr = jsonStr.replaceAll("\uFEFF", "");
+        StringBuilder sb = new StringBuilder(jsonStr.length());
+        Stack<Boolean> isListStack = new Stack<>();
+        boolean hasPrevObject = false;
+        boolean keyMode = true;
+
+        char[] chars = jsonStr.toCharArray();
+        for (int idx = 0; idx < chars.length; idx++) {
+            char c = chars[idx];
+
+            if (c == '{' || c == '[') {
+                if (hasPrevObject && keyMode) {
+                    sb.append(',');
+                }
+                isListStack.push(c == '[');
+
+                sb.append(c);
+                hasPrevObject = false;
+                keyMode = true;
+            }
+            else if (c == ':') {
+                keyMode = false;
+                sb.append(c);
+            }
+            else if (c == '}' || c == ']') {
+                isListStack.pop();
+                hasPrevObject = true;
+                keyMode = true;
+                sb.append(c);
+            }
+            else if (c == '"') {
+                // write a string value
+
+                if (hasPrevObject && (keyMode || isListStack.peek())) {
+                    sb.append(',');
+                }
+
+                boolean escape = false;
+                sb.append(c);
+
+                for (idx++; idx < chars.length; idx++) {
+                    char strC = chars[idx];
+                    sb.append(strC);
+                    if (strC == '\\') {
+                        escape = !escape;
+                    }
+                    else if (!escape && strC == '"') {
+                        break; // string end
+                    }
+                    else {
+                        escape = false;
+                    }
+                }
+
+                hasPrevObject = true;
+                keyMode = !keyMode;
+            }
+            else if (c != ',' && c != ' ' && c != '\t' && c != '\n') {
+                // write a value
+
+                if (hasPrevObject && (keyMode || isListStack.peek())) {
+                    sb.append(',');
+                }
+
+                sb.append(c);
+
+                for (idx++; idx < chars.length; idx++) {
+                    char valC = chars[idx];
+                    if (valC == '{' || valC == '[' || valC == '}' || valC == ']' ||
+                            valC == ',' || valC == ' ' || valC == '\t' || valC == '\n') {
+                        idx--;
+                        break;
+                    }
+                    sb.append(valC);
+                }
+
+                hasPrevObject = true;
+                keyMode = !keyMode;
+            }
+        }
+
+        return sb.toString();
     }
 }
