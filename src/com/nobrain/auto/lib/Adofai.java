@@ -3,7 +3,6 @@ package com.nobrain.auto.lib;
 import com.nobrain.auto.clasz.PressInfo;
 import com.nobrain.auto.manager.KeyDetect;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import org.json.simple.parser.ParseException;
 
 import java.util.*;
@@ -43,7 +42,7 @@ public class Adofai {
             Iterator<PressInfo> pressInterator = delayList.iterator();
 
             long nowTime, prevTime = System.nanoTime();
-            int prev = 0, now, delay = 55;
+            int prev = 0, now, delay;
             PressInfo press = pressInterator.next();
 
             if (isFirst){
@@ -56,34 +55,51 @@ public class Adofai {
                 isSecond = false;
             }
 
-
             while (true) {
-                if(isCancel) break;
+                // 如果玩家按下insert退出了宏
+                if (isCancel) break;
+                // 获取时间用来循环
                 nowTime = System.nanoTime();
+                // 如果该按按键了
                 if (nowTime - prevTime >= press.delay) {
+                    // 算下一个按键需要的延迟
                     prevTime += press.delay;
+
                     // 按键松开的延迟，所以可以设置一个默认值
                     delay = 55;
 
+                    // 如果上一个按键对应的floor不是最后一个floor
                     if (pressInterator.hasNext()) {
+                        // 切换到下一个floor对应的按键
                         press = pressInterator.next();
                     } else {
+                        // 设定文字“运行中”为不可见状态
                         isOn.setVisible(false);
+                        // 结束循环
                         break;
                     }
 
+                    // 设定一个变量（虽然不知道有啥用）
                     PressInfo finalPress = press;
-                    now = (int)(finalPress.delay/1000000);
+                    // 帮助计算按键松开延迟
+                    now = (int) (finalPress.delay / 1000000);
 
+                    // 按下按键
                     robot.keyPress(finalPress.key);
 
-                    if(now<55&&prev<55) {
-                        delay = now-5;
-                        if(delay<0) delay = 0;
-                    }
-
-
                     // 计算按键松开的延迟
+
+                    // 如果有长按，就
+                    if (press.getHoldDelay() != 0){
+                        delay = press.getHoldDelay();
+                    }
+                    // 默认情况的按键延迟
+                    else {
+                        if (now < 55 && prev < 55) {
+                            delay = now - 5;
+                            if (delay < 0) delay = 0;
+                        }
+                    }
 
                     try {
                         Timer timer = new Timer();
@@ -100,7 +116,8 @@ public class Adofai {
                     }
 
 
-                    prev = (int)(finalPress.delay/1000000);
+
+                    prev = (int) (finalPress.delay / 1000000);
                 }
             }
             thread.interrupt();

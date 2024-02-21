@@ -45,8 +45,10 @@ public class LoadMap {
         // 建立两个表，用来标注BPM和旋转变化。
         HashMap<Integer, Double> changeBPM = new HashMap<>();
         HashMap<Integer, Boolean> changeTwirl = new HashMap<>();
-        // 新增：暂停砖块
+        // 新增：暂停砖块、长按砖块
         HashMap<Integer, Double> pause = new HashMap<>();
+        // 放置读取到的长按“额外长按循环” 只能是正整数
+        HashMap<Integer, Integer> hold = new HashMap<>();
 
         // 获取谱面初始BPM
         double currentBPM = toDouble(setting.get("bpm"));
@@ -91,6 +93,10 @@ public class LoadMap {
             if (action.get("eventType").equals("Pause")){
                 pause.put(toInt(action.get("floor")) - 1, toDouble(action.get("duration")));
             }
+            // 如果有长按
+            if (action.get("eventType").equals("Hold")){
+                hold.put(toInt(action.get("floor")) - 1, toInt(action.get("duration")));
+            }
         }
 
         // 计算BPM
@@ -105,7 +111,6 @@ public class LoadMap {
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
                 // 中旋
                 boolean isMidspin = next.equals("!");
-                // 由于暂停砖块放置在中旋上没有用，所以不考虑那种情况
                 if (now.equals("!")) continue;
 
                 if(isMidspin) {
@@ -114,12 +119,11 @@ public class LoadMap {
                 }
 
                 int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
-                if(pause.get(n)!=null) angle += (int) (180 * pause.get(n));
 
                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
                 
-                PressInfo pressInfo = new PressInfo((long)(tempBPM*1000000000));
-
+                PressInfo pressInfo = new PressInfo();
+                pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
                     case Key.KEY8 -> {
@@ -167,14 +171,42 @@ public class LoadMap {
                     next = strToInt(getValue(angleData,n + 1));
                 }
 
-
                 int angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
-                if(pause.get(n)!=null) angle += (int) (180 * pause.get(n));
 
+                // 处理暂停
+                if (pause.get(n) != null) angle += (int) (180 * pause.get(n));
 
-                double tempBPM = ((double)angle / 180) * (60 / (currentBPM*pitch));
+                double tempBPM = ((double) angle / 180) * (60 / (currentBPM*pitch));
 
-                PressInfo pressInfo = new PressInfo((long)(tempBPM * 1000000000));
+                PressInfo pressInfo = new PressInfo();
+
+                // 处理长按
+                if (hold.get(n) != null){
+                    // 长按倍数BPM (缓存，方便阅读代码公式)
+                    // (以100为基准) (100BPM下0 duration长按为600ms)
+                    double holdBPMTime = currentBPM / 100;
+                    double holdDelay = (600 / holdBPMTime);
+                    // 下面会用到
+                    int curHoldDelay = 0;
+                    if (hold.get(n) == 0){
+                        // 可以强制转化为int
+                        // 2147483648 ms ≈ 25天
+                        pressInfo.setHoldDelay((int) Math.round(holdDelay));
+                    }
+                    // Duration != 0
+                    else {
+                        int durationTime = 3 * hold.get(n);
+                        pressInfo.setHoldDelay((int) (Math.round(holdDelay) * durationTime));
+                        // 不知道为啥，duration >= 1的时候延迟会提前约45ms，所以 +45ms。
+                        curHoldDelay = pressInfo.getHoldDelay() + 45;
+                    }
+
+                    tempBPM += ((double) curHoldDelay / 1000);
+                    // 由于他会记录两个砖块，但实际上第二个砖块是松开按键，所以会多记录一个砖块
+                    // 所以在这里写 n += 1 跳过那个砖块
+                    n += 1;
+                }
+                pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
                     case Key.KEY8 -> {
@@ -253,6 +285,7 @@ public class LoadMap {
                         && !line.contains("SetSpeed")
                         && !line.contains("Twirl")
                         && !line.contains("Pause")
+                        && !line.contains("Hold")
                 ) continue;
 
                 result.append(line).append("\n");
