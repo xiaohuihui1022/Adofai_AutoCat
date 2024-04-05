@@ -192,7 +192,6 @@ public class LoadMap {
                     if (angle == 360) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
-                System.out.println(angle);
                 double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
                 PressInfo pressInfo = new PressInfo();
