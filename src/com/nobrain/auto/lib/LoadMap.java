@@ -120,9 +120,24 @@ public class LoadMap {
 
                 int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
+                // 处理暂停
+                if (pause.get(n) != null) angle += (int) (180 * pause.get(n));
+
                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
                 
                 PressInfo pressInfo = new PressInfo();
+                // 处理长按
+                if (hold.get(n) != null){
+                    // 常规情况下(Duration = 0)，长按的holdDelay = tempBPM
+                    // duration != 0 的时候需要重新计算delay
+                    int tempAngle = angle;
+                    // Duration != 0
+                    if (hold.get(n) != 0){
+                        tempAngle += hold.get(n) * 180;
+                        tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
+                    }
+                    pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
+                }
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
@@ -155,14 +170,13 @@ public class LoadMap {
         // 如果原谱子是angleData
         else if (angleData != null){
             for (int n = 0; n < angleData.length; n++) {
-                int now = strToInt(angleData[n]);
+                double now = toDouble(angleData[n]);
 
-                int next = strToInt(getValue(angleData,n + 1));
+                double next = toDouble(getValue(angleData,n + 1));
                 boolean isMidspin = next == 999;
 
                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
-
 
                 if (now == 999) continue;
 
@@ -171,40 +185,29 @@ public class LoadMap {
                     next = strToInt(getValue(angleData,n + 1));
                 }
 
-                int angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
+                double angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
 
                 // 处理暂停
-                if (pause.get(n) != null) angle += (int) (180 * pause.get(n));
-
-                double tempBPM = ((double) angle / 180) * (60 / (currentBPM*pitch));
+                if (pause.get(n) != null) {
+                    if (angle == 360) angle += (int) (180 * (pause.get(n) - 1));
+                    else angle += (int) (180 * pause.get(n));
+                }
+                System.out.println(angle);
+                double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
                 PressInfo pressInfo = new PressInfo();
 
                 // 处理长按
                 if (hold.get(n) != null){
-                    // 长按倍数BPM (缓存，方便阅读代码公式)
-                    // (以100为基准) (100BPM下0 duration长按为600ms)
-                    double holdBPMTime = currentBPM / 100;
-                    double holdDelay = (600 / holdBPMTime);
-                    // 下面会用到
-                    int curHoldDelay = 0;
-                    if (hold.get(n) == 0){
-                        // 可以强制转化为int
-                        // 2147483648 ms ≈ 25天
-                        pressInfo.setHoldDelay((int) Math.round(holdDelay));
-                    }
+                    // 常规情况下(Duration = 0)，长按的holdDelay = tempBPM
+                    // duration != 0 的时候需要重新计算delay
+                    double tempAngle = angle;
                     // Duration != 0
-                    else {
-                        int durationTime = 3 * hold.get(n);
-                        pressInfo.setHoldDelay((int) (Math.round(holdDelay) * durationTime));
-                        // 不知道为啥，duration >= 1的时候延迟会提前约45ms，所以 +45ms。
-                        curHoldDelay = pressInfo.getHoldDelay() + 45;
+                    if (hold.get(n) != 0){
+                        tempAngle += hold.get(n) * 180;
+                        tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
                     }
-
-                    tempBPM += ((double) curHoldDelay / 1000);
-                    // 由于他会记录两个砖块，但实际上第二个砖块是松开按键，所以会多记录一个砖块
-                    // 所以在这里写 n += 1 跳过那个砖块
-                    n += 1;
+                    pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
                 }
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
@@ -246,8 +249,7 @@ public class LoadMap {
         try {
             return Integer.parseInt(String.valueOf(o).trim());
         } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
+            throw e;
         }
     }
 
@@ -298,17 +300,8 @@ public class LoadMap {
 
     // 将string转为int
     private int strToInt(String str) {
-        int result;
-        try {
-            result = Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            double temp = Double.parseDouble(str);
-            result = (int) temp;
-        }
-        return result;
-
+        return Integer.parseInt(str);
     }
-
 
     public static String fixJsonString(String jsonStr) {
         jsonStr = jsonStr.replaceAll("\uFEFF", "");

@@ -116,7 +116,6 @@ public class Adofai {
                     }
 
 
-
                     prev = (int) (finalPress.delay / 1000000);
                 }
             }

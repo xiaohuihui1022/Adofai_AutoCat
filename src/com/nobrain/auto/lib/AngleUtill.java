@@ -35,13 +35,14 @@ public class AngleUtill {
         return 0;
     }
     // angleData用
-    public static int getCurrentAngleData(int thisTile, int nextTile, Boolean isTwirl, Boolean isMidspin) {
-        int angle = (angleDataToCurrentAngle(nextTile) - angleDataToCurrentAngle(thisTile));
+    // double增加精度
+    public static double getCurrentAngleData(double thisTile, double nextTile, Boolean isTwirl, Boolean isMidspin) {
+        double angle = (angleDataToCurrentAngle(nextTile) - angleDataToCurrentAngle(thisTile));
         angle += (isMidspin)? 360:540;
         angle %= 360;
         if(isTwirl) angle = 360-angle;
         if(angle==0) angle = 360;
-        return angle;
+        return Math.abs(angle);
     }
 
     // pathData用
@@ -54,7 +55,16 @@ public class AngleUtill {
         return angle;
     }
 
-    private static int angleDataToCurrentAngle(int angleData) {
+    private static double angleDataToCurrentAngle(double angleData) {
+        // +- 2Π
+        while (angleData >= 360 || angleData <= -360){
+            if (angleData >= 360){
+                angleData -= 360;
+            }
+            else {
+                angleData += 360;
+            }
+        }
         if (angleData < 180){
             return 180 - angleData;
         }
