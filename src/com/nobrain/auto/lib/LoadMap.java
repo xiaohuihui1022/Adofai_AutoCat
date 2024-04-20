@@ -51,6 +51,8 @@ public class LoadMap {
         HashMap<Integer, Integer> hold = new HashMap<>();
         // 放置自动播放格子
         HashMap<Integer, Boolean> auto = new HashMap<>();
+        // 放置三星
+        HashMap<Integer, Boolean> multiPlanet = new HashMap<>();
 
 
         // 获取谱面初始BPM
@@ -61,6 +63,8 @@ public class LoadMap {
         boolean isAuto = false;
         // 检测当前格子是否为长按，以便换手
         boolean isHold = false;
+        // 检测三球
+        boolean isMultiPlanet = false;
 
         // 定义keys
         String[] key2 ="jf".split("");
@@ -114,6 +118,13 @@ public class LoadMap {
                     auto.put(floorNum, false);
                 }
             }
+            if (action.get("eventType").equals("MultiPlanet")){
+                if (action.get("planets").equals("ThreePlanets")){
+                    multiPlanet.put(floorNum, true);
+                } else {
+                    multiPlanet.put(floorNum, false);
+                }
+            }
 
         }
 
@@ -139,11 +150,15 @@ public class LoadMap {
                 int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
                 // 处理暂停
-                if (pause.get(n) != null) angle += (int) (180 * pause.get(n));
+                if (pause.get(n) != null) {
+                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    else angle += (int) (180 * pause.get(n));
+                }
 
                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
 
                 PressInfo pressInfo = new PressInfo();
+
                 // 处理长按
                 if (hold.get(n) != null){
                     isHold = true;
@@ -170,6 +185,7 @@ public class LoadMap {
                         isAuto = false;
                     }
                 }
+
                 // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
@@ -225,9 +241,26 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360) angle += (int) (180 * (pause.get(n) - 1));
+                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
+
+                // 三球用
+//                double angleTemp = angle;
+
+                // 处理三球
+//                if (isMultiPlanet) angle /= 3;
+//                if (multiPlanet.get(n) != null) {
+//                    if (multiPlanet.get(n)){
+//                        isMultiPlanet = true;
+//                        angle /= 3;
+//                    }
+//                    else {
+//                        isMultiPlanet = false;
+//                        angle = angleTemp;
+//                    }
+//                }
+
                 double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
                 PressInfo pressInfo = new PressInfo();
@@ -290,11 +323,6 @@ public class LoadMap {
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
         }
-
-
-        // 为下次读取谱面做准备
-        isAuto = false;
-        isHold = false;
     }
 
     private String getValue(String[] array, int index) {
@@ -347,6 +375,7 @@ public class LoadMap {
                                 && !line.contains("Pause")
                                 && !line.contains("Hold")
                                 && !line.contains("AutoPlayTiles")
+                                && !line.contains("MultiPlanet")
                 ) continue;
 
                 result.append(line).append("\n");
@@ -407,7 +436,7 @@ public class LoadMap {
                 sb.append(c);
             }
             else if (c == '}' || c == ']') {
-                isListStack.pop();
+                if (!isListStack.isEmpty()) isListStack.pop();
                 hasPrevObject = true;
                 keyMode = true;
                 sb.append(c);
