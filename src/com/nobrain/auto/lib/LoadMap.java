@@ -49,11 +49,18 @@ public class LoadMap {
         HashMap<Integer, Double> pause = new HashMap<>();
         // 放置读取到的长按“额外长按循环” 只能是正整数
         HashMap<Integer, Integer> hold = new HashMap<>();
+        // 放置自动播放格子
+        HashMap<Integer, Boolean> auto = new HashMap<>();
+
 
         // 获取谱面初始BPM
         double currentBPM = toDouble(setting.get("bpm"));
         // 初始旋转为false
         boolean isTwirl = false;
+        // 设置循环内判断自动播放
+        boolean isAuto = false;
+        // 检测当前格子是否为长按，以便换手
+        boolean isHold = false;
 
         // 定义keys
         String[] key2 ="jf".split("");
@@ -64,39 +71,50 @@ public class LoadMap {
         // 计算音高（倍速）
         double pitch = toDouble(setting.get("pitch")) / 100;
 
-        // 循环读取谱面
-        for(Object o : actions) {
+        // 循环读取谱面actions
+        for (Object o : actions) {
             JSONObject action = (JSONObject)o;
+            // 设置当前action对应的floor
+            int floorNum = toInt(action.get("floor")) - 1;
             // 如果查到兔子/乌龟
             if(action.get("eventType").equals("SetSpeed")) {
                 // Avoid NPE
                 if(action.get("speedType") == null) {
                     currentBPM = toDouble(action.get("beatsPerMinute"));
-                    changeBPM.put(toInt(action.get("floor"))-1, currentBPM);
+                    changeBPM.put(floorNum, currentBPM);
                     continue;
                 }
                 // 如果是直接修改BPM
                 if(action.get("speedType").equals("Bpm")) {
                     currentBPM = toDouble(action.get("beatsPerMinute"));
-                    changeBPM.put(toInt(action.get("floor"))-1, currentBPM);
+                    changeBPM.put(floorNum, currentBPM);
                     // 如果是BPM倍频器
                 } else {
-                    changeBPM.put(toInt(action.get("floor"))-1, currentBPM*toDouble(action.get("bpmMultiplier")));
+                    changeBPM.put(floorNum, currentBPM*toDouble(action.get("bpmMultiplier")));
                     currentBPM = currentBPM*toDouble(action.get("bpmMultiplier"));
                 }
             }
             // 如果有旋转
             if(action.get("eventType").equals("Twirl")) {
-                changeTwirl.put(toInt(action.get("floor"))-1,true);
+                changeTwirl.put(floorNum,true);
             }
             // 如果是暂停砖块
             if (action.get("eventType").equals("Pause")){
-                pause.put(toInt(action.get("floor")) - 1, toDouble(action.get("duration")));
+                pause.put(floorNum, toDouble(action.get("duration")));
             }
             // 如果有长按
             if (action.get("eventType").equals("Hold")){
-                hold.put(toInt(action.get("floor")) - 1, toInt(action.get("duration")));
+                hold.put(floorNum, toInt(action.get("duration")));
             }
+            if (action.get("eventType").equals("AutoPlayTiles")){
+                // 如果有auto 且值为true
+                if (toBoolean(action.get("enabled"))){
+                    auto.put(floorNum, true);
+                } else {
+                    auto.put(floorNum, false);
+                }
+            }
+
         }
 
         // 计算BPM
@@ -124,20 +142,35 @@ public class LoadMap {
                 if (pause.get(n) != null) angle += (int) (180 * pause.get(n));
 
                 double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
-                
+
                 PressInfo pressInfo = new PressInfo();
                 // 处理长按
                 if (hold.get(n) != null){
+                    isHold = true;
                     // 常规情况下(Duration = 0)，长按的holdDelay = tempBPM
                     // duration != 0 的时候需要重新计算delay
-                    int tempAngle = angle;
+                    double tempAngle = angle;
                     // Duration != 0
                     if (hold.get(n) != 0){
                         tempAngle += hold.get(n) * 180;
                         tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
+                } else {
+                    isHold = false;
                 }
+                // 处理auto
+                if (isAuto) pressInfo.setIsAuto(true);
+                if (auto.get(n) != null) {
+                    if (auto.get(n)){
+                        pressInfo.setIsAuto(true);
+                        isAuto = true;
+                    } else {
+                        pressInfo.setIsAuto(false);
+                        isAuto = false;
+                    }
+                }
+                // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
@@ -164,9 +197,12 @@ public class LoadMap {
                 }
                 i++;
                 delays.add(pressInfo);
+                delays = checkIfChangeHandNeeded(delays, isHold);
             }
 
         }
+
+
         // 如果原谱子是angleData
         else if (angleData != null){
             for (int n = 0; n < angleData.length; n++) {
@@ -182,7 +218,7 @@ public class LoadMap {
 
                 if(isMidspin) {
                     n++;
-                    next = strToInt(getValue(angleData,n + 1));
+                    next = toDouble(getValue(angleData,n + 1));
                 }
 
                 double angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
@@ -198,6 +234,7 @@ public class LoadMap {
 
                 // 处理长按
                 if (hold.get(n) != null){
+                    isHold = true;
                     // 常规情况下(Duration = 0)，长按的holdDelay = tempBPM
                     // duration != 0 的时候需要重新计算delay
                     double tempAngle = angle;
@@ -207,7 +244,22 @@ public class LoadMap {
                         tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
+                } else {
+                    isHold = false;
                 }
+                // 处理auto
+                if (isAuto) pressInfo.setIsAuto(true);
+                if (auto.get(n) != null) {
+                    if (auto.get(n)){
+                        pressInfo.setIsAuto(true);
+                        isAuto = true;
+                    } else {
+                        pressInfo.setIsAuto(false);
+                        isAuto = false;
+                    }
+                }
+
+                // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
@@ -235,8 +287,14 @@ public class LoadMap {
 
                 i++;
                 delays.add(pressInfo);
+                delays = checkIfChangeHandNeeded(delays, isHold);
             }
         }
+
+
+        // 为下次读取谱面做准备
+        isAuto = false;
+        isHold = false;
     }
 
     private String getValue(String[] array, int index) {
@@ -252,15 +310,16 @@ public class LoadMap {
         }
     }
 
-
-
-
     private double toDouble(Object o) {
         try {
             return Double.parseDouble(String.valueOf(o));
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    private boolean toBoolean(Object o){
+        return o.toString().equalsIgnoreCase("true");
     }
 
     private int convert(String key) {
@@ -283,10 +342,11 @@ public class LoadMap {
             while ((line = reader.readLine()) != null) {
                 if(
                         line.contains("floor")
-                        && !line.contains("SetSpeed")
-                        && !line.contains("Twirl")
-                        && !line.contains("Pause")
-                        && !line.contains("Hold")
+                                && !line.contains("SetSpeed")
+                                && !line.contains("Twirl")
+                                && !line.contains("Pause")
+                                && !line.contains("Hold")
+                                && !line.contains("AutoPlayTiles")
                 ) continue;
 
                 result.append(line).append("\n");
@@ -297,9 +357,28 @@ public class LoadMap {
         }
     }
 
-    // 将string转为int
-    private int strToInt(String str) {
-        return Integer.parseInt(str);
+    private ArrayList<PressInfo> checkIfChangeHandNeeded(ArrayList<PressInfo> delays, boolean isHold){
+        // 这个是hold
+        if (isHold){
+            int temp = delays.toArray().length - 1;
+            // 上个也是hold
+            if (delays.get(temp - 1).getHoldDelay() != 0){
+                // 按键还一样
+                if (delays.get(temp - 1).key == delays.get(temp).key){
+                    // 换手
+                    PressInfo tempPress = delays.get(temp);
+                    delays.remove(temp);
+                    String[] key8 ="jfkdls;a".split("");
+                    for (String string : key8) {
+                        tempPress.key = convert(string);
+                        if (tempPress.key != delays.get(temp - 1).key) break;
+                    }
+                    delays.add(tempPress);
+                }
+            }
+        }
+        return delays;
+
     }
 
     public static String fixJsonString(String jsonStr) {
@@ -386,4 +465,5 @@ public class LoadMap {
 
         return sb.toString();
     }
+
 }

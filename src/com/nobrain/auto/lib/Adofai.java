@@ -84,6 +84,43 @@ public class Adofai {
                     // 帮助计算按键松开延迟
                     now = (int) (finalPress.delay / 1000000);
 
+                    // 检测是否是自动播放格子
+                    if (finalPress.getIsAuto()){
+                        // 算一遍底下的代码，防止出bug
+                        // 如果有长按，就
+                        if (press.getHoldDelay() != 0){
+                            delay = press.getHoldDelay();
+                        }
+                        // 默认情况的按键延迟
+                        else {
+                            if (now < 55 && prev < 55) {
+                                delay = now - 5;
+                                if (delay < 0) delay = 0;
+                            }
+                        }
+
+                        try {
+                            Timer timer = new Timer();
+                            TimerTask timerTask = new TimerTask() {
+                                @Override
+                                public void run() {
+                                    robot.keyRelease(finalPress.key);
+                                    timer.cancel();
+                                    timer.purge();
+                                }
+                            };
+                            timer.schedule(timerTask, delay);
+                        } catch (Exception ignored) {
+                        }
+
+                        prev = (int) (finalPress.delay / 1000000);
+                        // continue，进行下一轮循环
+                        continue;
+                    }
+
+
+
+
                     // 按下按键
                     robot.keyPress(finalPress.key);
 
