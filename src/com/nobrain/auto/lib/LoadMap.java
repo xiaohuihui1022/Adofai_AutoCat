@@ -167,8 +167,8 @@ public class LoadMap {
                     double tempAngle = angle;
                     // Duration != 0
                     if (hold.get(n) != 0){
-                        tempAngle += hold.get(n) * 180;
-                        tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
+                        tempAngle += hold.get(n) * 360;
+                        tempBPM = (tempAngle / 180) * (60 / (currentBPM * pitch));
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
                 } else {
@@ -273,8 +273,8 @@ public class LoadMap {
                     double tempAngle = angle;
                     // Duration != 0
                     if (hold.get(n) != 0){
-                        tempAngle += hold.get(n) * 180;
-                        tempBPM = (int) ((tempAngle / 180) * (60 / (currentBPM * pitch)));
+                        tempAngle += hold.get(n) * 360;
+                        tempBPM = (tempAngle / 180) * (60 / (currentBPM * pitch));
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
                 } else {
