@@ -15,6 +15,8 @@ import static com.nobrain.auto.Main.isSecond;
 public class Adofai {
     public boolean isCancel = false;
     public static Thread thread;
+    // 校准时间
+    public long time = 0;
     private List<PressInfo> delayList;
     private Label isOn;
 
@@ -58,8 +60,8 @@ public class Adofai {
             while (true) {
                 // 如果玩家按下insert退出了宏
                 if (isCancel) break;
-                // 获取时间用来循环
-                nowTime = System.nanoTime();
+                // 获取时间用来循环 + 校准时间
+                nowTime = System.nanoTime() - time;
                 // 如果该按按键了
                 if (nowTime - prevTime >= press.delay) {
                     // 算下一个按键需要的延迟

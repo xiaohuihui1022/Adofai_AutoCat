@@ -54,7 +54,8 @@ public class LoadMap {
         // 放置三星
         HashMap<Integer, Boolean> multiPlanet = new HashMap<>();
 
-
+        // 获取谱面auto数目用
+        int autoTiles = 0;
         // 获取谱面初始BPM
         double currentBPM = toDouble(setting.get("bpm"));
         // 初始旋转为false
@@ -151,7 +152,7 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    if (angle == 360 && !isTwirl) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
 
@@ -185,7 +186,8 @@ public class LoadMap {
                         isAuto = false;
                     }
                 }
-
+                if (isAuto) autoTiles++;
+                
                 // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
@@ -241,7 +243,7 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    if (angle == 360 && !isTwirl) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
 
@@ -291,6 +293,7 @@ public class LoadMap {
                         isAuto = false;
                     }
                 }
+                if (isAuto) autoTiles++;
 
                 // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
@@ -323,6 +326,14 @@ public class LoadMap {
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
         }
+
+
+
+        System.out.println("谱面读取完成");
+        printInRed("谱面信息：");
+        printInRed("谱面路径：%s", path);
+        printInGreen("变速数：%d，旋转数：%d，暂停数：%d，长按数：%d，自动播放格子数：%d", changeBPM.size(),
+                changeTwirl.size(), pause.size(), hold.size(), autoTiles);
     }
 
     private String getValue(String[] array, int index) {
@@ -376,14 +387,17 @@ public class LoadMap {
                                 && !line.contains("Hold")
                                 && !line.contains("AutoPlayTiles")
                                 && !line.contains("MultiPlanet")
+                                && !line.contains("EditorComment")
                 ) continue;
 
                 result.append(line).append("\n");
             }
+            reader.close();
             return result.toString();
         } catch (IOException e) {
             return "";
         }
+
     }
 
     private ArrayList<PressInfo> checkIfChangeHandNeeded(ArrayList<PressInfo> delays, boolean isHold){
@@ -493,6 +507,21 @@ public class LoadMap {
         }
 
         return sb.toString();
+    }
+
+    public static void printInRed(Object text){
+        System.out.println("\033[31;4m" + text + "\033[0m");
+    }
+
+    public static void printInRed(Object text, Object... args){
+        System.out.println("\033[31;4m" + String.format((String) text, args) + "\033[0m");
+    }
+
+    public static void printInGreen(Object text){
+        System.out.println("\033[32;4m" + text + "\033[0m");
+    }
+    public static void printInGreen(Object text, Object... args){
+        System.out.println("\033[32;4m" + String.format((String) text, args) + "\033[0m");
     }
 
 }
