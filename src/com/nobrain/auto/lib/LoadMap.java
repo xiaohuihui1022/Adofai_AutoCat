@@ -72,6 +72,8 @@ public class LoadMap {
         String[] key4 ="jfkd".split("");
         String[] key6 ="jfkdls".split("");
         String[] key8 ="jfkdls;a".split("");
+        String[] key12 ="jfkdls;anvmc".split("");
+        String[] key16 ="jfkdls;anvmc,x/z".split("");
 
         // 计算音高（倍速）
         double pitch = toDouble(setting.get("pitch")) / 100;
@@ -148,7 +150,7 @@ public class LoadMap {
                     next = getValue(pathData,n+1);
                 }
 
-                int angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
+                double angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
                 // 处理暂停
                 if (pause.get(n) != null) {
@@ -156,7 +158,27 @@ public class LoadMap {
                     else angle += (int) (180 * pause.get(n));
                 }
 
-                double tempBPM = ((double)angle / 180) * (60 / (currentBPM * pitch));
+                // 三球用
+                double angleTemp = angle;
+
+                // 处理三球
+                if (isMultiPlanet) {
+                    if (angle > 60) angle -= 60;
+                    else angle += 180;;
+                }
+                if (multiPlanet.get(n) != null) {
+                    if (multiPlanet.get(n)){
+                        isMultiPlanet = true;
+                        if (angle > 60) angle -= 60;
+                        else angle += 180;
+                    }
+                    else {
+                        isMultiPlanet = false;
+                        angle = angleTemp;
+                    }
+                }
+
+                double tempBPM = (angle / 180) * (60 / (currentBPM * pitch));
 
                 PressInfo pressInfo = new PressInfo();
 
@@ -192,6 +214,14 @@ public class LoadMap {
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
+                    case Key.KEY16 -> {
+                        if (i >= key16.length) i = 0;
+                        pressInfo.key = convert(key16[i]);
+                    }
+                    case Key.KEY12 -> {
+                        if (i >= key12.length) i = 0;
+                        pressInfo.key = convert(key12[i]);
+                    }
                     case Key.KEY8 -> {
                         if (i >= key8.length) i = 0;
                         pressInfo.key = convert(key8[i]);
@@ -248,20 +278,24 @@ public class LoadMap {
                 }
 
                 // 三球用
-//                double angleTemp = angle;
+                double angleTemp = angle;
 
                 // 处理三球
-//                if (isMultiPlanet) angle /= 3;
-//                if (multiPlanet.get(n) != null) {
-//                    if (multiPlanet.get(n)){
-//                        isMultiPlanet = true;
-//                        angle /= 3;
-//                    }
-//                    else {
-//                        isMultiPlanet = false;
-//                        angle = angleTemp;
-//                    }
-//                }
+                if (isMultiPlanet) {
+                    if (angle > 60) angle -= 60;
+                    else angle += 180;;
+                }
+                if (multiPlanet.get(n) != null) {
+                    if (multiPlanet.get(n)){
+                        isMultiPlanet = true;
+                        if (angle > 60) angle -= 60;
+                        else angle += 180;
+                    }
+                    else {
+                        isMultiPlanet = false;
+                        angle = angleTemp;
+                    }
+                }
 
                 double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
@@ -299,6 +333,14 @@ public class LoadMap {
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
                 switch (Key.getKey((int) (tempBPM * 1000))) {
+                    case Key.KEY16 -> {
+                        if (i >= key16.length) i = 0;
+                        pressInfo.key = convert(key16[i]);
+                    }
+                    case Key.KEY12 -> {
+                        if (i >= key12.length) i = 0;
+                        pressInfo.key = convert(key12[i]);
+                    }
                     case Key.KEY8 -> {
                         if (i >= key8.length) i = 0;
                         pressInfo.key = convert(key8[i]);
@@ -370,7 +412,16 @@ public class LoadMap {
                 .replaceAll("k","75")
                 .replaceAll("l","76")
                 .replaceAll(";","59")
-                .replaceAll("f","70"));
+                .replaceAll("f","70")
+                .replaceAll("z", "90")
+                .replaceAll("x", "88")
+                .replaceAll("c", "67")
+                .replaceAll("v", "86")
+                .replaceAll("n", "78")
+                .replaceAll("m", "77")
+                .replaceAll(",", "44")
+                .replaceAll("/", "46")
+        );
     }
 
     private String read(String path) {

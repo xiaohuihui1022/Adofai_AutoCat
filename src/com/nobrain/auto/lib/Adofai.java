@@ -5,6 +5,7 @@ import com.nobrain.auto.manager.KeyDetect;
 import javafx.scene.control.Label;
 import org.json.simple.parser.ParseException;
 
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.awt.*;
 import java.util.List;
@@ -119,9 +120,6 @@ public class Adofai {
                         // continue，进行下一轮循环
                         continue;
                     }
-
-
-
 
                     // 按下按键
                     robot.keyPress(finalPress.key);
