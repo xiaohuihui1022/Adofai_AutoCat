@@ -40,6 +40,10 @@ public class AngleUtill {
         double angle = (angleDataToCurrentAngle(nextTile) - angleDataToCurrentAngle(thisTile));
         angle += (isMidspin)? 360:540;
         angle %= 360;
+        // 10的5次方，四舍五入后小于1，则为360°
+        if (angle != 0 && Math.abs(Math.round(angle * 100000)) <= 1) {
+            angle = 360;
+        }
         if(isTwirl) angle = 360-angle;
         if(angle==0) angle = 360;
         return Math.abs(angle);
