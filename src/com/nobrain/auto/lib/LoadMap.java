@@ -149,11 +149,10 @@ public class LoadMap {
                 if(isMidspin) {
                     n++;
                     next = getValue(pathData,n+1);
+                    // 重复判断一次，判断中旋那里的砖块
+                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
                 }
-
-                // 重复判断一次，判断中旋那里的砖块
-                if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
                 double angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
@@ -273,10 +272,11 @@ public class LoadMap {
                 if(isMidspin) {
                     n++;
                     next = toDouble(getValue(angleData,n + 1));
+                    // 重复判断一次，判断中旋那里的砖块
+                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
                 }
-                // 重复判断一次，判断中旋那里的砖块
-                if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+
 
                 double angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
 
