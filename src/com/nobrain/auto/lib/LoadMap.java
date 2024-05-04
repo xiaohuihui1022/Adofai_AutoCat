@@ -134,6 +134,7 @@ public class LoadMap {
         // 计算BPM
         currentBPM = toDouble(setting.get("bpm")) * pitch;
         int i = 0;
+
         // 如果原谱是pathdata
         if (pathData != null){
             for (int n = 0; n < pathData.length; n++) {
@@ -149,6 +150,10 @@ public class LoadMap {
                     n++;
                     next = getValue(pathData,n+1);
                 }
+
+                // 重复判断一次，判断中旋那里的砖块
+                if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
                 double angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
@@ -251,6 +256,7 @@ public class LoadMap {
         }
 
 
+
         // 如果原谱子是angleData
         else if (angleData != null){
             for (int n = 0; n < angleData.length; n++) {
@@ -268,6 +274,9 @@ public class LoadMap {
                     n++;
                     next = toDouble(getValue(angleData,n + 1));
                 }
+                // 重复判断一次，判断中旋那里的砖块
+                if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
 
                 double angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
 
