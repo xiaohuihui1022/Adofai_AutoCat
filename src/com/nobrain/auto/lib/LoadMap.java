@@ -158,7 +158,7 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360 && !isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
 
@@ -168,13 +168,13 @@ public class LoadMap {
                 // 处理三球
                 if (isMultiPlanet) {
                     if (angle > 60) angle -= 60;
-                    else angle += 180;;
+                    else angle += 300;;
                 }
                 if (multiPlanet.get(n) != null) {
                     if (multiPlanet.get(n)){
                         isMultiPlanet = true;
                         if (angle > 60) angle -= 60;
-                        else angle += 180;
+                        else angle += 300;
                     }
                     else {
                         isMultiPlanet = false;
@@ -282,7 +282,7 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360 && !isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
 
@@ -292,13 +292,13 @@ public class LoadMap {
                 // 处理三球
                 if (isMultiPlanet) {
                     if (angle > 60) angle -= 60;
-                    else angle += 180;;
+                    else angle += 300;
                 }
                 if (multiPlanet.get(n) != null) {
                     if (multiPlanet.get(n)){
                         isMultiPlanet = true;
                         if (angle > 60) angle -= 60;
-                        else angle += 180;
+                        else angle += 300;
                     }
                     else {
                         isMultiPlanet = false;
