@@ -169,12 +169,14 @@ public class LoadMap {
                 if (isMultiPlanet) {
                     if (angle > 60) angle -= 60;
                     else angle += 300;;
+                    if (isMidspin) angle = angleTemp;
                 }
                 if (multiPlanet.get(n) != null) {
                     if (multiPlanet.get(n)){
                         isMultiPlanet = true;
                         if (angle > 60) angle -= 60;
                         else angle += 300;
+                        if (isMidspin) angle = angleTemp;
                     }
                     else {
                         isMultiPlanet = false;
@@ -293,18 +295,22 @@ public class LoadMap {
                 if (isMultiPlanet) {
                     if (angle > 60) angle -= 60;
                     else angle += 300;
+                    if (isMidspin) angle = angleTemp;
                 }
                 if (multiPlanet.get(n) != null) {
                     if (multiPlanet.get(n)){
                         isMultiPlanet = true;
                         if (angle > 60) angle -= 60;
                         else angle += 300;
+                        if (isMidspin) angle = angleTemp;
                     }
                     else {
                         isMultiPlanet = false;
                         angle = angleTemp;
                     }
                 }
+
+                System.out.println(angle);
 
                 double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
