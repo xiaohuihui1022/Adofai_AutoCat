@@ -146,13 +146,7 @@ public class LoadMap {
                 boolean isMidspin = next.equals("!");
                 if (now.equals("!")) continue;
 
-                if(isMidspin) {
-                    n++;
-                    next = getValue(pathData,n+1);
-                    // 重复判断一次，判断中旋那里的砖块
-                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
-                }
+                if (isMidspin) next = getValue(pathData,n + 2);
 
                 double angle = AngleUtill.getCurrentAngle(now,next,isTwirl,isMidspin);
 
@@ -168,7 +162,7 @@ public class LoadMap {
                 // 处理三球
                 if (isMultiPlanet) {
                     if (angle > 60) angle -= 60;
-                    else angle += 300;;
+                    else angle += 300;
                     if (isMidspin) angle = angleTemp;
                 }
                 if (multiPlanet.get(n) != null) {
@@ -250,35 +244,25 @@ public class LoadMap {
                     }
                 }
                 i++;
+                if (isMidspin) n++;
                 delays.add(pressInfo);
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
 
         }
 
-
-
         // 如果原谱子是angleData
         else if (angleData != null){
             for (int n = 0; n < angleData.length; n++) {
                 double now = toDouble(angleData[n]);
-
                 double next = toDouble(getValue(angleData,n + 1));
                 boolean isMidspin = next == 999;
-
                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
-
+                // 如果这格是中旋，就跳过
                 if (now == 999) continue;
 
-                if(isMidspin) {
-                    n++;
-                    next = toDouble(getValue(angleData,n + 1));
-                    // 重复判断一次，判断中旋那里的砖块
-                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
-                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
-                }
-
+                if (isMidspin) next = toDouble(getValue(angleData,n + 2));
 
                 double angle = AngleUtill.getCurrentAngleData(now,next,isTwirl,isMidspin);
 
@@ -310,12 +294,9 @@ public class LoadMap {
                     }
                 }
 
-                System.out.println(angle);
-
                 double tempBPM = (angle / 180) * (60 / (currentBPM*pitch));
 
                 PressInfo pressInfo = new PressInfo();
-
                 // 处理长按
                 if (hold.get(n) != null){
                     isHold = true;
@@ -379,6 +360,7 @@ public class LoadMap {
                 }
 
                 i++;
+                if (isMidspin) n++;
                 delays.add(pressInfo);
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
@@ -415,7 +397,7 @@ public class LoadMap {
     }
 
     private boolean toBoolean(Object o){
-        return o.toString().equalsIgnoreCase("true");
+        return o.toString().equalsIgnoreCase("true") || o.toString().equalsIgnoreCase("Enabled");
     }
 
     private int convert(String key) {
