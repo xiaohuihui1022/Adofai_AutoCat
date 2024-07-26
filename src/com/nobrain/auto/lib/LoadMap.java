@@ -195,7 +195,11 @@ public class LoadMap {
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
                 } else {
-                    isHold = false;
+                    if (isHold){
+                        // Ignore掉长按的末尾砖块
+                        pressInfo.setIsAuto(true);
+                        isHold = false;
+                    }
                 }
                 // 处理auto
                 if (isAuto) pressInfo.setIsAuto(true);
@@ -209,7 +213,7 @@ public class LoadMap {
                     }
                 }
                 if (isAuto) autoTiles++;
-                
+
                 // 设置延迟
                 pressInfo.setPressDelay((long) (tempBPM * 1000000000));
 
@@ -310,7 +314,11 @@ public class LoadMap {
                     }
                     pressInfo.setHoldDelay((int) Math.round(tempBPM * 1000));
                 } else {
-                    isHold = false;
+                    if (isHold){
+                        // Ignore掉长按的末尾砖块
+                        pressInfo.setIsAuto(true);
+                        isHold = false;
+                    }
                 }
                 // 处理auto
                 if (isAuto) pressInfo.setIsAuto(true);
