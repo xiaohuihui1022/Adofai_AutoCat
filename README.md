@@ -11,6 +11,10 @@
 - [ ] 支持16K
 - [x] 自动校准
 
+## 16K 键位：
+ASDFJKL;
+ZXCVBM./
+
 # 以下是原作者的README
 
 ![ㅋㅋㅋㅋ](https://raw.githubusercontent.com/NoBrain0917/Adofai_AutoCat/master/img/%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B%E3%85%8B.png)<br>
