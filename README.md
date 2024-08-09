@@ -1,13 +1,14 @@
-# Adofai AutoCat
+# Adofai AutoCat V3
 # 现在本软件无需手动设置延迟，只需要在第一格砖块时按下insert，即可自动打谱
 # 注意：
-## 本仓库为我自己汉化改版（兼容AngleData），原仓库已被Archived。
+## 本仓库为xiaohuihui1022汉化改版（兼容AngleData），原仓库已被Archived。
 
 ## Todo List:
 - [x] 支持识别angleData
 - [x] 修复大地、RTX 20000等非DLC谱子无法正常打完的问题
 - [x] 支持DLC内容
 - [ ] 手法模拟
+- [ ] 支持16K
 - [x] 自动校准
 
 # 以下是原作者的README
