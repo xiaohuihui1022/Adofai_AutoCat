@@ -248,7 +248,11 @@ public class LoadMap {
                     }
                 }
                 i++;
-                if (isMidspin) n++;
+                if (isMidspin) {
+                    n++;
+                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+                }
                 delays.add(pressInfo);
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
@@ -366,9 +370,13 @@ public class LoadMap {
                         pressInfo.key = convert(key2[i]);
                     }
                 }
-
                 i++;
-                if (isMidspin) n++;
+                if (isMidspin) {
+                    n++;
+                    if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
+                    if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+                }
+
                 delays.add(pressInfo);
                 delays = checkIfChangeHandNeeded(delays, isHold);
             }
@@ -443,7 +451,10 @@ public class LoadMap {
                                 && !line.contains("Hold")
                                 && !line.contains("AutoPlayTiles")
                                 && !line.contains("MultiPlanet")
+                                // 保留这三个可能含有换行符的东西，防止json读取出错
                                 && !line.contains("EditorComment")
+                                && !line.contains("SetText")
+                                && !line.contains("AddText")
                 ) continue;
 
                 result.append(line).append("\n");

@@ -61,7 +61,7 @@ public class AngleUtill {
 
     private static double angleDataToCurrentAngle(double angleData) {
         // +- 2Π
-        while (angleData >= 360 || angleData <= -360){
+        while (Math.abs(angleData) >= 360){
             if (angleData >= 360){
                 angleData -= 360;
             }
