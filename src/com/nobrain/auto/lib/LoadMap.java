@@ -276,7 +276,7 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (angle == 360 && isTwirl) angle += (int) (180 * (pause.get(n) - 1));
+                    if (Math.round(now+next)==-180) angle += (int) (180 * (pause.get(n) - 1));
                     else angle += (int) (180 * pause.get(n));
                 }
 
@@ -471,6 +471,12 @@ public class LoadMap {
         // 这个是hold
         if (isHold){
             int temp = delays.toArray().length - 1;
+            try{
+                Integer integer = delays.get(temp - 1).getHoldDelay();
+            }
+            catch (Exception e){
+                return delays;
+            }
             // 上个也是hold
             if (delays.get(temp - 1).getHoldDelay() != 0){
                 // 按键还一样
