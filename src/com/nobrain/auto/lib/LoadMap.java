@@ -242,10 +242,6 @@ public class LoadMap {
                         if (i >= key2.length) i = 0;
                         pressInfo.key = convert(key2[i]);
                     }
-                    case Key.KEY1 -> {
-                        if (i != 0) i = 0;
-                        pressInfo.key = convert(key2[i]);
-                    }
                 }
                 i++;
                 if (isMidspin) {
@@ -276,8 +272,12 @@ public class LoadMap {
 
                 // 处理暂停
                 if (pause.get(n) != null) {
-                    if (Math.round(now+next)==-180) angle += (int) (180 * (pause.get(n) - 1));
-                    else angle += (int) (180 * pause.get(n));
+                    if (Math.round(now+next)==-180 && !(pause.get(n) == 0)) {
+                        angle += (int) (180 * (pause.get(n) - 1));
+                    }
+                    else{
+                        angle += (int) (180 * pause.get(n));
+                    }
                 }
 
                 // 三球用
@@ -363,10 +363,6 @@ public class LoadMap {
                     }
                     case Key.KEY2 -> {
                         if (i >= key2.length) i = 0;
-                        pressInfo.key = convert(key2[i]);
-                    }
-                    case Key.KEY1 -> {
-                        if (i != 0) i = 0;
                         pressInfo.key = convert(key2[i]);
                     }
                 }
