@@ -66,6 +66,8 @@ public class LoadMap {
         boolean isHold = false;
         // 检测三球
         boolean isMultiPlanet = false;
+        // 处理180°+中旋+Twirl的问题
+        boolean isMidspinPlus = false;
 
         // 定义keys
         String[] key2 ="jf".split("");
@@ -263,6 +265,15 @@ public class LoadMap {
                 boolean isMidspin = next == 999;
                 if(changeBPM.get(n)!=null) currentBPM = changeBPM.get(n);
                 if(changeTwirl.get(n)!=null) isTwirl = !isTwirl;
+                if(isMidspinPlus) {
+                    isTwirl = !isTwirl;
+                    isMidspinPlus = false;
+                }
+                if(isMidspin && changeTwirl.get(n) != null && changeTwirl.get(n+1) != null){
+                    isTwirl = !isTwirl;
+                    isMidspinPlus = true;
+                }
+
                 // 如果这格是中旋，就跳过
                 if (now == 999) continue;
 
