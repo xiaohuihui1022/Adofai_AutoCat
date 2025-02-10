@@ -462,6 +462,7 @@ public class LoadMap {
                                 && !line.contains("EditorComment")
                                 && !line.contains("SetText")
                                 && !line.contains("AddText")
+                                && !line.contains("MoveDecorations")
                 ) continue;
 
                 result.append(line).append("\n");
